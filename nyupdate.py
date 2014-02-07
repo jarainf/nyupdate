@@ -3,7 +3,6 @@
 import feedparser
 import re
 import subprocess
-import pickle
 import time
 import sys
 import signal
@@ -14,6 +13,10 @@ BASEDIR = expanduser('~/.nyupdate/')
 SEEDFILE = BASEDIR + 'feeds'
 NYAAREX = re.compile('.+tid=(\d+)')
 UPDATEINTERVAL = 600
+RED = '\033[31m'
+BLUE = '\033[34m'
+GREEN = '\033[32m'
+ENDC = '\033[0m'
 
 def _get_torrents(url):
 	rssfeed = feedparser.parse(url)
@@ -27,7 +30,7 @@ def _check_rss(feeds):
 	for feed, last in feeds.items():
 		data = _get_torrents(feed)
 		if data is False:
-			print('RSS-Feed: ' + feed + ' is not reachable or invalid!')
+			print(RED + 'RSS-Feed: ' + feed + ' is not reachable or invalid!' + ENDC)
 			continue
 		else:
 			print('RSS-Feed: ' + feed + ' is now being processed!')
@@ -38,6 +41,7 @@ def _check_rss(feeds):
 				continue
 			if tuid > newlast:
 				newlast = tuid
+			print(GREEN + title + ' has been added to queue!' + ENDC)
 			_addtorrent(url)
 		feeds[feed] = newlast
 	return feeds
@@ -58,9 +62,9 @@ def _read_feeds():
 					try:
 						feeds[parsed[0]] = int(parsed[1])
 					except:
-						print('Line: ' + line + ' in ' + FEEDFILE + ' is invalid!')
+						print(RED + 'Line: ' + line + ' in ' + FEEDFILE + ' is invalid!' + ENDC)
 				elif parsed[0] is not '':
-					print('Line: ' + line + ' in ' + FEEDFILE + ' is invalid!')
+					print(RED + 'Line: ' + line + ' in ' + FEEDFILE + ' is invalid!' + ENDC)
 	return feeds
 
 def _write_feeds():
@@ -74,7 +78,7 @@ def _write_feeds():
 			if line.startswith('#'):
 				f.write(line + linesep)
 		for (key, value) in updated_feeds.items():
-			f.write(key + ' @ ' + str(value) + linesep)
+			f.write(key + '@ ' + str(value) + linesep)
 
 def _exit(signum = None, frame = None):
 	print('Program is stopping now.')
@@ -91,10 +95,10 @@ def main():
 		signal.signal(sig, _exit)
 
 	while True:
-		print('Checking feeds now...')
+		print(BLUE + 'Checking feeds now...' + ENDC)
 		updated_feeds = _check_rss(updated_feeds)
 		timeout = UPDATEINTERVAL
-		print('Checking in %.2f minutes again.' % (timeout / 60))
+		print((BLUE + 'Checking in %.2f minutes again.' + ENDC) % (timeout / 60))
 		time.sleep(timeout)
 
 if __name__ == '__main__':
