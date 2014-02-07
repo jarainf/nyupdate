@@ -6,10 +6,11 @@
 #
 #	http://www.nyaa.se/?page=rss&user=73859&term=Nisekoi+mkv
 # 
-# You can also define an offset, you do this by first retrieving
-# the RSS-Feeds URL then find the info site to your desired offset
-# and extracting the 'tid' from it's URL. Append it to the feeds
-# line, seperated by an '@' (Feel free to add tabs or whitespaces)
+# You can also define an 'offset'. Do this by retrieving the URL
+# to the download-info page of your desired offset and extracting
+# the 'tid' from it's URL. Append it to the feed's line, seperated 
+# by an '@' (Feel free to add tabs or whitespaces).
+# Note: This is entirely optional, you don't need to define one.
 #
 # Example:
 #
