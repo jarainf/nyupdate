@@ -100,7 +100,7 @@ def _reload_config(memfeeds):
 	return feeds
 
 def main():
-	 feedparser.PREFERRED_XML_PARSERS.remove('drv_libxml2') # This parser seems to be broken with Python3	
+	feedparser.PREFERRED_XML_PARSERS.remove('drv_libxml2') # This parser seems to be broken with Python3	
 
 	global _parsed_feeds
 	_parsed_feeds = _read_feeds()
