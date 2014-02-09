@@ -68,7 +68,7 @@ def _read_feeds():
 					print(RED + 'Line: ' + line + ' in ' + FEEDFILE + ' is invalid!' + ENDC)
 	return feeds
 
-def _write_feeds():
+def _write_feeds(memfeeds):
 	hashtext = ''
 	with open(SEEDFILE, 'r') as f:
 		for line in f:
@@ -78,7 +78,7 @@ def _write_feeds():
 		for line in hashtext:
 			if line.startswith('#'):
 				f.write(line + linesep)
-		for (key, value) in _parsed_feeds.items():
+		for (key, value) in memfeeds.items():
 			f.write(key + ' @ ' + str(value) + linesep)
 
 def _signals(signum = None, frame = None):
@@ -87,7 +87,7 @@ def _signals(signum = None, frame = None):
 		_parsed_feeds = _reload_config(_parsed_feeds)
 	else:
 		print('Program is stopping now.')
-		_write_feeds()
+		_write_feeds(_parsed_feeds)
 		print('Program has been successfully terminated!')
 		sys.exit(0)
 
@@ -97,8 +97,7 @@ def _reload_config(memfeeds):
 	for feed in feeds.keys():
 		if feed in memfeeds.keys():
 			feeds[feed] = _parsed_feeds[feed]
-	memfeeds = feeds
-	return memfeeds
+	return feeds
 
 def main():
 	global _parsed_feeds
