@@ -55,17 +55,19 @@ def _read_feeds():
 	with open(SEEDFILE, 'r') as f:
 		for a_line in f:
 			line = ''.join(a_line.split())
-			if not line.startswith('#'):
-				parsed = line.split('@')
-				if len(parsed) < 2 and parsed[0] != '':
-					feeds[parsed[0]] = 0
-				elif len(parsed) == 2:
-					try:
-						feeds[parsed[0]] = int(parsed[1])
-					except:
-						print(RED + 'Line: ' + line + ' in ' + FEEDFILE + ' is invalid!' + ENDC)
-				elif parsed[0] != '':
+			if line.startswith('#'):
+				continue
+
+			parsed = line.split('@')
+			if len(parsed) < 2 and parsed[0] != '':
+				feeds[parsed[0]] = 0
+			elif len(parsed) == 2:
+				try:
+					feeds[parsed[0]] = int(parsed[1])
+				except:
 					print(RED + 'Line: ' + line + ' in ' + FEEDFILE + ' is invalid!' + ENDC)
+			else:
+				print(RED + 'Line: ' + line + ' in ' + FEEDFILE + ' is invalid!' + ENDC)
 	return feeds
 
 def _write_feeds(memfeeds):
@@ -83,8 +85,9 @@ def _write_feeds(memfeeds):
 
 def _signals(signum = None, frame = None):
 	global _parsed_feeds
+	_parsed_feeds = _reload_config(_parsed_feeds)
 	if signum == 1:
-		_parsed_feeds = _reload_config(_parsed_feeds)
+		pass
 	else:
 		print('Program is stopping now.')
 		_write_feeds(_parsed_feeds)
