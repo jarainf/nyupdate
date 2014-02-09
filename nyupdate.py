@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # Author: Jan 'jarainf' Rathner <jan@rathner.net>
 
 import feedparser
@@ -29,7 +30,7 @@ def _get_torrents(url):
 def _check_rss(feeds): 
 	for feed, last in feeds.items():
 		data = _get_torrents(feed)
-		if data is False:
+		if not data:
 			print(RED + 'RSS-Feed: ' + feed + ' is not reachable or invalid!' + ENDC)
 			continue
 		else:
@@ -52,18 +53,18 @@ def _addtorrent(url):
 def _read_feeds():
 	feeds = {}
 	with open(SEEDFILE, 'r') as f:
-		for line in f:
-			line = line.strip(' \n\r\t')
+		for a_line in f:
+			line = ''.join(a_line.split())
 			if not line.startswith('#'):
 				parsed = line.split('@')
-				if len(parsed) < 2 and parsed[0] is not '':
+				if len(parsed) < 2 and parsed[0] != '':
 					feeds[parsed[0]] = 0
 				elif len(parsed) == 2:
 					try:
 						feeds[parsed[0]] = int(parsed[1])
 					except:
 						print(RED + 'Line: ' + line + ' in ' + FEEDFILE + ' is invalid!' + ENDC)
-				elif parsed[0] is not '':
+				elif parsed[0] != '':
 					print(RED + 'Line: ' + line + ' in ' + FEEDFILE + ' is invalid!' + ENDC)
 	return feeds
 
@@ -77,26 +78,38 @@ def _write_feeds():
 		for line in hashtext:
 			if line.startswith('#'):
 				f.write(line + linesep)
-		for (key, value) in updated_feeds.items():
-			f.write(key + '@ ' + str(value) + linesep)
+		for (key, value) in _parsed_feeds.items():
+			f.write(key + ' @ ' + str(value) + linesep)
 
-def _exit(signum = None, frame = None):
-	print('Program is stopping now.')
-	_write_feeds()
-	print('Program has been successfully terminated!')
-	sys.exit(0)
+def _signals(signum = None, frame = None):
+	global _parsed_feeds
+	if signum == 1:
+		_parsed_feeds = _reload_config(_parsed_feeds)
+	else:
+		print('Program is stopping now.')
+		_write_feeds()
+		print('Program has been successfully terminated!')
+		sys.exit(0)
+
+def _reload_config(memfeeds):
+	print('Reloading feed information.')
+	feeds = _read_feeds()
+	for feed in feeds.keys():
+		if feed in memfeeds.keys():
+			feeds[feed] = _parsed_feeds[feed]
+	memfeeds = feeds
+	return memfeeds
 
 def main():
-	feeds = _read_feeds()
-	global updated_feeds
-	updated_feeds = feeds
+	global _parsed_feeds
+	_parsed_feeds = _read_feeds()
 	
 	for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT, signal.SIGHUP]:
-		signal.signal(sig, _exit)
+		signal.signal(sig, _signals)
 
 	while True:
 		print(BLUE + 'Checking feeds now...' + ENDC)
-		updated_feeds = _check_rss(updated_feeds)
+		_parsed_feeds = _check_rss(_parsed_feeds)
 		timeout = UPDATEINTERVAL
 		print((BLUE + 'Checking in %.2f minutes again.' + ENDC) % (timeout / 60))
 		time.sleep(timeout)
