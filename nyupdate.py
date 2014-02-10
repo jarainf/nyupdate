@@ -59,19 +59,18 @@ def _check_rss(feeds):
 			print(_ok('Adding %s to queue!' % title))
 			success = _addtorrent(url)
 			if not success:
-				for i in (j for j in range(RETRYATTEMPTS - 1) if not success):
-					print(_err('Failed to queue torrent, retrying in %d seconds.' % RETRYINTERVAL))
-					time.sleep(RETRYINTERVAL)
-					success = _addtorrent(url)
-				if not success:
-					print(_err('Failed to queue torrent after %d tries, skipping.' % RETRYATTEMPTS))
-					newlast = last
-					break
+				print(_err('Failed to queue torrent after %d tries, skipping.' % RETRYATTEMPTS))
+				newlast = last
+				break
 		feeds[feed] = newlast
 	return feeds
 
 def _addtorrent(url):
 	exitcode = subprocess.call(['transmission-remote', '--add', url])
+	for i in (j for j in range(RETRYATTEMPTS - 1) if bool(exitcode)):
+		print(_err('Failed to queue torrent, retrying in %d seconds.' % RETRYINTERVAL))
+		time.sleep(RETRYINTERVAL)
+		exitcode = subprocess.call(['transmission-remote', '--add', url])
 	return not bool(exitcode)
 
 def _read_feeds():
