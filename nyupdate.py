@@ -14,10 +14,19 @@ BASEDIR = expanduser('~/.nyupdate/')
 SEEDFILE = BASEDIR + 'feeds'
 NYAAREX = re.compile('.+tid=(\d+)')
 UPDATEINTERVAL = 600
-RED = '\033[31m'
-BLUE = '\033[34m'
-GREEN = '\033[32m'
+ERRORC = '\033[31m'
+STATUSC = '\033[34m'
+OKC = '\033[32m'
 ENDC = '\033[0m'
+
+def _err(string):
+	return ERRORC + string + ENDC
+
+def _stat(string):
+	return STATUSC + string + ENDC
+
+def _ok(string):
+	return OKC + string + ENDC
 
 def _get_torrents(url):
 	rssfeed = feedparser.parse(url)
@@ -31,7 +40,7 @@ def _check_rss(feeds):
 	for feed, last in feeds.items():
 		data = _get_torrents(feed)
 		if not data:
-			print(RED + 'RSS-Feed: ' + feed + ' is not reachable or invalid!' + ENDC)
+			print(_err('RSS-Feed: ' + feed + ' is not reachable or invalid!'))
 			continue
 		else:
 			print('RSS-Feed: ' + feed + ' is now being processed!')
@@ -42,7 +51,7 @@ def _check_rss(feeds):
 				continue
 			if tuid > newlast:
 				newlast = tuid
-			print(GREEN + title + ' has been added to queue!' + ENDC)
+			print(_ok(title + ' has been added to queue!'))
 			_addtorrent(url)
 		feeds[feed] = newlast
 	return feeds
@@ -65,9 +74,9 @@ def _read_feeds():
 				try:
 					feeds[parsed[0]] = int(parsed[1])
 				except:
-					print(RED + 'Line: ' + line + ' in ' + FEEDFILE + ' is invalid!' + ENDC)
+					print(_err('Line: ' + line + ' in ' + FEEDFILE + ' is invalid!'))
 			else:
-				print(RED + 'Line: ' + line + ' in ' + FEEDFILE + ' is invalid!' + ENDC)
+				print(_err('Line: ' + line + ' in ' + FEEDFILE + ' is invalid!'))
 	return feeds
 
 def _write_feeds(memfeeds):
@@ -111,10 +120,10 @@ def main():
 		signal.signal(sig, _signals)
 
 	while True:
-		print(BLUE + 'Checking feeds now...' + ENDC)
+		print(_stat('Checking feeds now...'))
 		_parsed_feeds = _check_rss(_parsed_feeds)
 		timeout = UPDATEINTERVAL
-		print((BLUE + 'Checking in %.2f minutes again.' + ENDC) % (timeout / 60))
+		print(_stat('Checking in %.2f minutes again.' % (timeout / 60)))
 		time.sleep(timeout)
 
 if __name__ == '__main__':
