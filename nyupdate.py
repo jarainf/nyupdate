@@ -87,7 +87,7 @@ def _signals(signum = None, frame = None):
 	global _parsed_feeds
 	_parsed_feeds = _reload_config(_parsed_feeds)
 	if signum == 1:
-		pass
+		print('Reloading feed information')
 	else:
 		print('Program is stopping now.')
 		_write_feeds(_parsed_feeds)
@@ -95,7 +95,6 @@ def _signals(signum = None, frame = None):
 		sys.exit(0)
 
 def _reload_config(memfeeds):
-	print('Reloading feed information.')
 	feeds = _read_feeds()
 	for feed in feeds.keys():
 		if feed in memfeeds.keys():
