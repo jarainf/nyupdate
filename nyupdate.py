@@ -14,10 +14,15 @@ BASEDIR = expanduser('~/.nyupdate/')
 SEEDFILE = BASEDIR + 'feeds'
 NYAAREX = re.compile('.+tid=(\d+)')
 UPDATEINTERVAL = 600
+RETRYINTERVAL = 5
+RETRYATTEMPTS = 5
 ERRORC = '\033[31m'
 STATUSC = '\033[34m'
 OKC = '\033[32m'
 ENDC = '\033[0m'
+
+INVALIDFEED = 'RSS-Feed: %s is now being processed!'
+INVALIDLINE = 'Line: %s in %s is invalid!'
 
 def _err(string):
 	return ERRORC + string + ENDC
@@ -40,10 +45,10 @@ def _check_rss(feeds):
 	for feed, last in feeds.items():
 		data = _get_torrents(feed)
 		if not data:
-			print(_err('RSS-Feed: ' + feed + ' is not reachable or invalid!'))
+			print(_err(INVALIDFEED % feed))
 			continue
 		else:
-			print('RSS-Feed: ' + feed + ' is now being processed!')
+			print(INVALIDFEED % feed)
 		newlast = last
 		for url, title in data.items():
 			tuid = int(NYAAREX.match(url).group(1))
@@ -51,13 +56,23 @@ def _check_rss(feeds):
 				continue
 			if tuid > newlast:
 				newlast = tuid
-			print(_ok(title + ' has been added to queue!'))
-			_addtorrent(url)
+			print(_ok('Adding %s to queue!' % title))
+			success = _addtorrent(url)
+			if not success:
+				for i in (j for j in range(RETRYATTEMPTS - 1) if not success):
+					print(_err('Failed to queue torrent, retrying in %d seconds.' % RETRYINTERVAL))
+					time.sleep(RETRYINTERVAL)
+					success = _addtorrent(url)
+				if not success:
+					print(_err('Failed to queue torrent after %d tries, skipping.' % RETRYATTEMPTS))
+					newlast = last
+					break
 		feeds[feed] = newlast
 	return feeds
 
 def _addtorrent(url):
-	subprocess.call(['transmission-remote', '--add', url])
+	exitcode = subprocess.call(['transmission-remote', '--add', url])
+	return not bool(exitcode)
 
 def _read_feeds():
 	feeds = {}
@@ -66,7 +81,6 @@ def _read_feeds():
 			line = ''.join(a_line.split())
 			if line.startswith('#'):
 				continue
-
 			parsed = line.split('@')
 			if len(parsed) < 2 and parsed[0] != '':
 				feeds[parsed[0]] = 0
@@ -74,9 +88,9 @@ def _read_feeds():
 				try:
 					feeds[parsed[0]] = int(parsed[1])
 				except:
-					print(_err('Line: ' + line + ' in ' + FEEDFILE + ' is invalid!'))
+					print(_err(INVALIDLINE % (line, FEEDFILE)))
 			else:
-				print(_err('Line: ' + line + ' in ' + FEEDFILE + ' is invalid!'))
+				print(_err(INVALIDLINE % (line, FEEDFILE)))
 	return feeds
 
 def _write_feeds(memfeeds):
