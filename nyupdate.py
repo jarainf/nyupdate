@@ -114,7 +114,7 @@ def _signals(signum = None, frame = None):
 	else:
 		print('Program is stopping now.')
 		_write_feeds(_parsed_feeds)
-		print('Program has been successfully terminated!')
+		print('Program has successfully terminated!')
 		sys.exit(0)
 
 def _reload_config(memfeeds):
@@ -137,7 +137,7 @@ def main():
 		print(_stat('Checking feeds now...'))
 		_parsed_feeds = _check_rss(_parsed_feeds)
 		timeout = UPDATEINTERVAL
-		print(_stat('Checking in %.2f minutes again.' % (timeout / 60)))
+		print(_stat('Checking again in %.2f minutes.' % (timeout / 60)))
 		time.sleep(timeout)
 
 if __name__ == '__main__':
