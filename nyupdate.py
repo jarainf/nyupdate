@@ -21,7 +21,8 @@ STATUSC = '\033[34m'
 OKC = '\033[32m'
 ENDC = '\033[0m'
 
-INVALIDFEED = 'RSS-Feed: %s is now being processed!'
+INVALIDFEED = 'RSS-Feed: %s is not reachable or invalid!'
+VALIDFEED = 'RSS-Feed: %s is now being processed!'
 INVALIDLINE = 'Line: %s in %s is invalid!'
 
 def _err(string):
@@ -40,7 +41,6 @@ def _get_torrents(url):
 	else:
 		return False
 
-
 def _check_rss(feeds): 
 	for feed, last in feeds.items():
 		data = _get_torrents(feed)
@@ -48,7 +48,7 @@ def _check_rss(feeds):
 			print(_err(INVALIDFEED % feed))
 			continue
 		else:
-			print(INVALIDFEED % feed)
+			print(VALIDFEED % feed)
 		newlast = last
 		for url, title in data.items():
 			tuid = int(NYAAREX.match(url).group(1))
@@ -124,7 +124,7 @@ def _reload_config(memfeeds):
 	return feeds
 
 def main():
-	feedparser.PREFERRED_XML_PARSERS.remove('drv_libxml2') # This parser seems to be broken with Python3	
+	feedparser.PREFERRED_XML_PARSERS.remove('drv_libxml2') # This parser appears to be broken with Python3	
 
 	global _parsed_feeds
 	_parsed_feeds = _read_feeds()
