@@ -46,7 +46,7 @@ def _get_torrents(url):
 def _check_queue(queue):
 	deletions = ()
 	if queue:
-		print(_stat('Retrying torrents from queue.'))
+		print(_stat('Retrying torrents from queue...'))
 	else:
 		return
 	for torrent, tries in queue.items():
@@ -86,6 +86,7 @@ def _check_rss(feeds):
 			print(_ok('Adding %s to queue!' % title))
 			if not _addtorrent(url):
 				print(_err('Failed to queue torrent after %d tries, skipping.' % RETRYATTEMPTS))
+				_queue[url] = 0
 				_append_file(url, QUEUEFILE)
 		feeds[feed] = newlast
 	return feeds
@@ -106,7 +107,7 @@ def _read_file(dfile):
 			if line.startswith('#') or line == '':
 				continue
 			parsed = line.split('@')
-			if len(parsed) < 2 and parsed[0] != '':
+			if len(parsed) < 2:
 				data[parsed[0]] = 0
 			elif len(parsed) == 2:
 				try:
@@ -161,6 +162,7 @@ def main():
 	global _parsed_feeds
 	_parsed_feeds = _read_file(FEEDFILE)
 
+	global _queue
 	_queue = _read_file(QUEUEFILE)
 
 	for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGQUIT, signal.SIGHUP]:
@@ -170,7 +172,7 @@ def main():
 		print(_stat('Checking feeds now...'))
 		_parsed_feeds = _check_rss(_parsed_feeds)
 		_queue = _check_queue(_queue)
-		print(_stat('Checking again in %.2f minutes.' % (UPDATEINTERVAL/ 60)))
+		print(_stat('Checking again in %.2f minutes.' % (UPDATEINTERVAL / 60)))
 		time.sleep(UPDATEINTERVAL)
 
 if __name__ == '__main__':
