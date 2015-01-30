@@ -69,6 +69,7 @@ def _check_queue(queue):
 	return queue
 
 def _check_rss(feeds):
+	global _queue
 	for feed, last in feeds.items():
 		data = _get_torrents(feed)
 		if not data:
