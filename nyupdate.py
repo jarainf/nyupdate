@@ -13,7 +13,7 @@ BASEDIR = os.path.expanduser('~/.nyupdate/')
 FEEDFILE = BASEDIR + 'feeds'
 QUEUEFILE = BASEDIR + 'queue'
 FAILFILE = BASEDIR + 'fails'
-NYAAREX = re.compile('.+tid=(\d+)')
+NYAAREX = re.compile('.+?(\d+)\.torrent')
 UPDATEINTERVAL = 600
 RETRYINTERVAL = 5
 RETRYATTEMPTS = 5
